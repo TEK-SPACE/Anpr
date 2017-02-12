@@ -15,5 +15,22 @@ namespace ANPR.Controllers
             return View();
         }
 
+        [HttpGet]
+        public ActionResult Upload()
+        {
+            ViewBag.Title = "Home Page";
+
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Upload(FormCollection formCollection)
+        {
+            ViewBag.Title = "Home Page";
+
+            //Calling Ocr/Post API
+
+            return View();
+        }
     }
 }

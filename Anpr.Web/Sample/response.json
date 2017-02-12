@@ -1,0 +1,91 @@
+﻿{
+  "version": 2,
+  "data_type": "alpr_results",
+  "epoch_time": 1486422108000,
+  "img_width": 1452,
+  "img_height": 871,
+  "processing_time_ms": 1014.261719,
+  "regions_of_interest": [],
+  "results": [
+    {
+      "plate": "WER0CK7",
+      "confidence": 91.344727,
+      "matches_template": 0,
+      "plate_index": 0,
+      "region": "",
+      "region_confidence": 0,
+      "processing_time_ms": 2.839300,
+      "requested_topn": 10,
+      "coordinates": [
+        {
+          "x": 161,
+          "y": 261
+        },
+        {
+          "x": 1154,
+          "y": 249
+        },
+        {
+          "x": 1170,
+          "y": 726
+        },
+        {
+          "x": 181,
+          "y": 738
+        }
+      ],
+      "candidates": [
+        {
+          "plate": "WER0CK7",
+          "confidence": 91.344727,
+          "matches_template": 0
+        },
+        {
+          "plate": "ER0CK7",
+          "confidence": 89.504059,
+          "matches_template": 0
+        },
+        {
+          "plate": "MER0CK7",
+          "confidence": 86.757515,
+          "matches_template": 0
+        },
+        {
+          "plate": "WEROCK7",
+          "confidence": 84.802689,
+          "matches_template": 0
+        },
+        {
+          "plate": "HER0CK7",
+          "confidence": 84.717331,
+          "matches_template": 0
+        },
+        {
+          "plate": "VER0CK7",
+          "confidence": 84.256477,
+          "matches_template": 0
+        },
+        {
+          "plate": "WERDCK7",
+          "confidence": 84.157631,
+          "matches_template": 0
+        },
+        {
+          "plate": "WERQCK7",
+          "confidence": 84.021439,
+          "matches_template": 0
+        },
+        {
+          "plate": "EROCK7",
+          "confidence": 82.962036,
+          "matches_template": 0
+        },
+        {
+          "plate": "WERUCK7",
+          "confidence": 82.821014,
+          "matches_template": 0
+        }
+      ]
+    }
+  ]
+}

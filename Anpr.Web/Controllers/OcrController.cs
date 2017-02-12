@@ -35,6 +35,9 @@ namespace ANPR.Controllers
                 });
                 var result = await client.PostAsync("/", content);
                 string resultContent = await result.Content.ReadAsStringAsync();
+
+                //If this doesnt return any result use sample response and parse
+
                 Console.WriteLine(resultContent);
             }
 
