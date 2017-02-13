@@ -1,0 +1,12 @@
+﻿@model ANPR.Models.ImageResponse
+@{
+    ViewBag.Title = "Result";
+}
+
+@foreach(var result in Model.Results)
+{
+    foreach(var candidate in result.Candidates)
+    {
+        @String.Format("{0}% - {1}", @Math.Round(candidate.Confidence, 2), @candidate.Plate) <br/>
+    }
+}
