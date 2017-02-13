@@ -21,7 +21,10 @@
         }
 
         .headImage {
-            width: 100%;
+            max-width: 100%;
+            max-height: 400px;
+            display: block;
+            margin: 0 auto;
         }
 
         .plateSearch {
@@ -43,11 +46,12 @@
             display: inline-block;
         }
 
-     
+
 
         ul li {
             list-style: none;
         }
+
         .lblConfidence {
             width: 44%;
             padding: 5px;
@@ -59,11 +63,12 @@
             border: 2px solid #FFA500;
             font-weight: bold;
         }
-           .enterImg {
-               width: 4%;
-    float: left;
-    padding-top: 7px;
-        max-width: 30px;
+
+        .enterImg {
+            width: 4%;
+            float: left;
+            padding-top: 7px;
+            max-width: 30px;
         }
     </style>
 </head>
@@ -80,11 +85,11 @@
                 <ul>
                     @foreach (var candidate in result.Candidates)
                     {
-                    <li class="row">
-                        <label class="lblConfidence" type="label" name="label1">@Math.Round(candidate.Confidence, 2)</label>
-                        <label class="lblConfidence" type="label" name="label1">@candidate.Plate</label>
-                        <img class="enterImg" src="/images/enter1.png">
-                    </li>
+                        <li class="row">
+                            <label class="lblConfidence" type="label" name="label1">@Math.Round(candidate.Confidence, 2)</label>
+                            <label class="lblConfidence" type="label" name="label1">@candidate.Plate</label>
+                            <img class="enterImg" src="/images/enter1.png">
+                        </li>
                     }
                 </ul>
             }
