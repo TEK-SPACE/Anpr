@@ -6,9 +6,13 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Results;
+using System.Web.Mvc;
 using ANPR.Models;
 using ANPR.Utitlities;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using Json = System.Web.Helpers.Json;
 
 namespace ANPR.Controllers
 {
@@ -28,29 +32,47 @@ namespace ANPR.Controllers
         }
 
         // POST api/<controller>
-        [HttpPost]
-        public async Task<string> Post([FromBody]byte [] imageBytes)
+        [System.Web.Http.HttpPost]
+        public async Task<JsonResult<ImageResponse>> Post()
         {
+            var httpContent = Request.Content;
+            //get file name from content disposition
+            var fileName = httpContent.Headers.ContentDisposition?.FileName ?? "image.jpg";
+            //Get file stream from the request content
+            var fileStream = await httpContent.ReadAsStreamAsync();
+
             ImageResponse imageResponse = null;
-            var content = await UploadImage(_baseUri, imageBytes);
-            //string content;
-            //using (var httpClient = new HttpClient())
-            //{
-            //    httpClient.DefaultRequestHeaders.Add("Image-type", "jpeg");
-            //    var response = await httpClient.PostAsync(_baseUri, formDataContent);
-            //    content = await response.Content.ReadAsStringAsync();
-            //}
+
+            string content;
+            using (var httpClient = new HttpClient())
+            {
+                var requestContent = new MultipartFormDataContent();
+                var imageContent = new StreamContent(fileStream);
+                imageContent.Headers.ContentType =
+                    MediaTypeHeaderValue.Parse("image/jpeg");
+                requestContent.Add(imageContent, "image", fileName);
+                requestContent.Headers.Add("Image-type", "jpeg");
+                var response = await httpClient.PostAsync(_baseUri, requestContent);
+                content = await response.Content.ReadAsStringAsync();
+            }
 
             if (!string.IsNullOrWhiteSpace(content))
             {
                 content = content.Replace("-nan", "0");
                 imageResponse = JsonConvert.DeserializeObject<ImageResponse>(content);
             }
+
             if (imageResponse?.Results == null || !imageResponse.Results.Any())
             {
                 imageResponse = JsonConvert.DeserializeObject<ImageResponse>(@"..\Sample\response.json".Load());
             }
-            return JsonConvert.SerializeObject(imageResponse);
+            var jsonSerializerSettings = new JsonSerializerSettings
+            {
+                Formatting = Formatting.Indented,
+                TypeNameHandling = TypeNameHandling.Objects,
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
+            return Json(imageResponse, jsonSerializerSettings);
         }
 
         public async Task<string> UploadImage(string url, byte[] imageData)

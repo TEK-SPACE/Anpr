@@ -34,36 +34,33 @@ namespace ANPR.Controllers
         public async Task<ActionResult> Upload(FormCollection formCollection)
         {
             var baseUri = "http://localhost:49977/api/Ocr";
-            string boundary = "----CustomBoundary" + DateTime.Now.Ticks.ToString("x");
 
-        HttpPostedFileBase file = Request?.Files[0];
+            HttpPostedFileBase file = Request?.Files[0];
 
             if (file == null || (file.ContentLength <= 0) || string.IsNullOrEmpty(file.FileName))
                 return new EmptyResult();
 
             string fileName = file.FileName;
-            byte[] paramFileBytes = new byte[file.ContentLength];
 
-            HttpContent stringContent = new StringContent(fileName);
-            HttpContent fileStreamContent = new StreamContent(file.InputStream);
-            HttpContent bytesContent = new ByteArrayContent(paramFileBytes);
             ImageResponse imageResponse = null;
 
             using (var formDataContent = new MultipartFormDataContent())
             {
-                formDataContent.Add(stringContent, "param1", "param1");
-                formDataContent.Add(fileStreamContent, "file1", "file1");
-                formDataContent.Add(bytesContent, "imageUploaded", "imageUploaded");
+                var stringContent = new StringContent(fileName);
+                formDataContent.Add(stringContent, fileName);
+
+                var streamContent = new StreamContent(file.InputStream);
+                streamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(file.ContentType);
+                streamContent.Headers.ContentLength = file.ContentLength;
+                streamContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                {
+                    Name = fileName,
+                    FileName = file.FileName
+                };
+                formDataContent.Add(streamContent);
                 using (var httpClient = new HttpClient())
                 {
-                    formDataContent.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("multipart/form-data; boundary=" + boundary);
-
-                    ByteArrayContent byteContent = new ByteArrayContent(paramFileBytes);
-                    byteContent.Headers.ContentType =
-          MediaTypeHeaderValue.Parse("application/json");
-
-                    var response = await httpClient.PostAsync(baseUri, byteContent);
+                    var response = await httpClient.PostAsync(baseUri, formDataContent);
                     var content = await response.Content.ReadAsStringAsync();
                     if (!string.IsNullOrWhiteSpace(content))
                     {
@@ -72,12 +69,6 @@ namespace ANPR.Controllers
                     }
                 }
             }
-
-            if (imageResponse?.Results == null || !imageResponse.Results.Any())
-            {
-                imageResponse = JsonConvert.DeserializeObject<ImageResponse>(@"..\Sample\response.json".Load());
-            }
-
             return View("Result", imageResponse);
         }
 
