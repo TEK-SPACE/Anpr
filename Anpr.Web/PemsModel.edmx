@@ -1,0 +1,370 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="PemsUsProModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2008" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="ENF_Permits">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="ENFCustomerId" Type="int" Nullable="false" />
+          <Property Name="ENFCreatedDateTime" Type="datetime" Nullable="false" />
+          <Property Name="ENFPlateNo" Type="varchar" MaxLength="255" />
+          <Property Name="ENFState" Type="varchar" MaxLength="255" />
+          <Property Name="ENFSource" Type="varchar" MaxLength="255" />
+          <Property Name="ENFType" Type="varchar" MaxLength="255" />
+          <Property Name="EnfFileDateTime" Type="datetime" />
+        </EntityType>
+        <EntityType Name="EnfVendorTransaction">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="EnfCustomerId" Type="bigint" />
+          <Property Name="EnfVendorId" Type="bigint" />
+          <Property Name="GroupId" Type="int" />
+          <Property Name="RegionId" Type="int" />
+          <Property Name="PayStationId" Type="int" />
+          <Property Name="SettingsId" Type="int" />
+          <Property Name="TicketNumber" Type="bigint" />
+          <Property Name="StallId" Type="bigint" />
+          <Property Name="PurchasedDate" Type="datetime" />
+          <Property Name="ExpiryDate" Type="datetime" />
+          <Property Name="PaymentType" Type="int" />
+          <Property Name="TransactionType" Type="int" />
+          <Property Name="CardType" Type="varchar" MaxLength="32" />
+          <Property Name="CardNumber" Type="varchar" MaxLength="24" />
+          <Property Name="CardPocessingRetries" Type="int" />
+          <Property Name="CardProcessingTxnId" Type="varchar" MaxLength="124" />
+          <Property Name="PaidCitationNumber" Type="varchar" MaxLength="124" />
+          <Property Name="ExcessAmountPaid" Type="varchar" MaxLength="32" />
+          <Property Name="RefundTicketAmount" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="RefundChangeIssued" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="ChargedAmount" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="TotalCashAmount" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="TotalCardAmount" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="RateId" Type="int" />
+          <Property Name="RateName" Type="varchar" MaxLength="64" />
+          <Property Name="PlateNumber" Type="varchar" MaxLength="32" />
+          <Property Name="PayByCellVendorId" Type="bigint" />
+          <Property Name="CreationDate" Type="datetime" />
+          <Property Name="UpdateDate" Type="datetime" />
+          <Property Name="SerialNumber" Type="varchar" MaxLength="124" />
+          <Property Name="paystationType" Type="varchar" MaxLength="124" />
+          <Property Name="LocationId" Type="int" />
+          <Property Name="cardProcessingAuthorizationNumber" Type="varchar" MaxLength="124" />
+          <Property Name="cardProcessingDate" Type="datetime" />
+          <Property Name="cardProcessingStatus" Type="varchar" MaxLength="124" />
+          <Property Name="cardProcessingReferenceNumber" Type="varchar" MaxLength="124" />
+          <Property Name="cardProcessingMerchantAccount" Type="varchar" MaxLength="124" />
+          <Property Name="couponNumber" Type="varchar" MaxLength="124" />
+          <Property Name="couponDiscountPercent" Type="int" />
+          <Property Name="couponDiscountDollar" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="RateValue" Type="decimal" Precision="18" Scale="0" />
+        </EntityType>
+        <EntityType Name="ParkVehicle">
+          <Key>
+            <PropertyRef Name="VehicleID" />
+          </Key>
+          <Property Name="VehicleID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="LPNumber" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="LPLocation" Type="varchar" MaxLength="20" Nullable="false" />
+          <Property Name="VMake" Type="varchar" MaxLength="20" />
+          <Property Name="VModel" Type="varchar" MaxLength="20" />
+          <Property Name="VColour" Type="varchar" MaxLength="20" />
+        </EntityType>
+        <EntityType Name="PayByCellPlateTxn">
+          <Key>
+            <PropertyRef Name="PayByCellPlateTxnId" />
+          </Key>
+          <Property Name="PayByCellPlateTxnId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="CustomerId" Type="int" Nullable="false" />
+          <Property Name="TxnSeqNum" Type="varchar" MaxLength="48" Nullable="false" />
+          <Property Name="ReceiptId" Type="varchar" MaxLength="48" Nullable="false" />
+          <Property Name="Status" Type="int" />
+          <Property Name="StartDateTime" Type="datetime" />
+          <Property Name="ExpiryDateTime" Type="datetime" />
+          <Property Name="TransDateTime" Type="datetime" Nullable="false" />
+          <Property Name="SpaceNum" Type="bigint" />
+          <Property Name="Amount" Type="int" />
+          <Property Name="TimePaid" Type="int" />
+          <Property Name="MeterId" Type="int" />
+          <Property Name="VendorId" Type="int" />
+          <Property Name="ZoneId" Type="int" />
+          <Property Name="TxnType" Type="char" MaxLength="1" Nullable="false" />
+          <Property Name="VehicleId" Type="int" />
+          <Property Name="CreateDateTime" Type="datetime" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_PayByCellPlateTxn_VehicleId">
+          <End Role="ParkVehicle" Type="Self.ParkVehicle" Multiplicity="0..1" />
+          <End Role="PayByCellPlateTxn" Type="Self.PayByCellPlateTxn" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ParkVehicle">
+              <PropertyRef Name="VehicleID" />
+            </Principal>
+            <Dependent Role="PayByCellPlateTxn">
+              <PropertyRef Name="VehicleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="PemsUsProModelStoreContainer">
+          <EntitySet Name="ENF_Permits" EntityType="Self.ENF_Permits" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="EnfVendorTransaction" EntityType="Self.EnfVendorTransaction" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ParkVehicle" EntityType="Self.ParkVehicle" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PayByCellPlateTxn" EntityType="Self.PayByCellPlateTxn" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_PayByCellPlateTxn_VehicleId" Association="Self.FK_PayByCellPlateTxn_VehicleId">
+            <End Role="ParkVehicle" EntitySet="ParkVehicle" />
+            <End Role="PayByCellPlateTxn" EntitySet="PayByCellPlateTxn" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="PemsUsProModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="ENF_Permits">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="ENFCustomerId" Type="Int32" Nullable="false" />
+          <Property Name="ENFCreatedDateTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="ENFPlateNo" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="ENFState" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="ENFSource" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="ENFType" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="EnfFileDateTime" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityType Name="EnfVendorTransaction">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="EnfCustomerId" Type="Int64" />
+          <Property Name="EnfVendorId" Type="Int64" />
+          <Property Name="GroupId" Type="Int32" />
+          <Property Name="RegionId" Type="Int32" />
+          <Property Name="PayStationId" Type="Int32" />
+          <Property Name="SettingsId" Type="Int32" />
+          <Property Name="TicketNumber" Type="Int64" />
+          <Property Name="StallId" Type="Int64" />
+          <Property Name="PurchasedDate" Type="DateTime" Precision="3" />
+          <Property Name="ExpiryDate" Type="DateTime" Precision="3" />
+          <Property Name="PaymentType" Type="Int32" />
+          <Property Name="TransactionType" Type="Int32" />
+          <Property Name="CardType" Type="String" MaxLength="32" FixedLength="false" Unicode="false" />
+          <Property Name="CardNumber" Type="String" MaxLength="24" FixedLength="false" Unicode="false" />
+          <Property Name="CardPocessingRetries" Type="Int32" />
+          <Property Name="CardProcessingTxnId" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="PaidCitationNumber" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="ExcessAmountPaid" Type="String" MaxLength="32" FixedLength="false" Unicode="false" />
+          <Property Name="RefundTicketAmount" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="RefundChangeIssued" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="ChargedAmount" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="TotalCashAmount" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="TotalCardAmount" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="RateId" Type="Int32" />
+          <Property Name="RateName" Type="String" MaxLength="64" FixedLength="false" Unicode="false" />
+          <Property Name="PlateNumber" Type="String" MaxLength="32" FixedLength="false" Unicode="false" />
+          <Property Name="PayByCellVendorId" Type="Int64" />
+          <Property Name="CreationDate" Type="DateTime" Precision="3" />
+          <Property Name="UpdateDate" Type="DateTime" Precision="3" />
+          <Property Name="SerialNumber" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="paystationType" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="LocationId" Type="Int32" />
+          <Property Name="cardProcessingAuthorizationNumber" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="cardProcessingDate" Type="DateTime" Precision="3" />
+          <Property Name="cardProcessingStatus" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="cardProcessingReferenceNumber" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="cardProcessingMerchantAccount" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="couponNumber" Type="String" MaxLength="124" FixedLength="false" Unicode="false" />
+          <Property Name="couponDiscountPercent" Type="Int32" />
+          <Property Name="couponDiscountDollar" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="RateValue" Type="Decimal" Precision="18" Scale="0" />
+        </EntityType>
+        <EntityType Name="PayByCellPlateTxn">
+          <Key>
+            <PropertyRef Name="PayByCellPlateTxnId" />
+          </Key>
+          <Property Name="PayByCellPlateTxnId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="CustomerId" Type="Int32" Nullable="false" />
+          <Property Name="TxnSeqNum" Type="String" MaxLength="48" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="ReceiptId" Type="String" MaxLength="48" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Status" Type="Int32" />
+          <Property Name="StartDateTime" Type="DateTime" Precision="3" />
+          <Property Name="ExpiryDateTime" Type="DateTime" Precision="3" />
+          <Property Name="TransDateTime" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="SpaceNum" Type="Int64" />
+          <Property Name="Amount" Type="Int32" />
+          <Property Name="TimePaid" Type="Int32" />
+          <Property Name="MeterId" Type="Int32" />
+          <Property Name="VendorId" Type="Int32" />
+          <Property Name="ZoneId" Type="Int32" />
+          <Property Name="TxnType" Type="String" MaxLength="1" FixedLength="true" Unicode="false" Nullable="false" />
+          <Property Name="VehicleId" Type="Int32" />
+          <Property Name="CreateDateTime" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="ParkVehicle" Relationship="PemsUsProModel.FK_PayByCellPlateTxn_VehicleId" FromRole="PayByCellPlateTxn" ToRole="ParkVehicle" />
+        </EntityType>
+        <EntityContainer Name="PemsUsProEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="ENF_Permits" EntityType="Self.ENF_Permits" />
+          <EntitySet Name="EnfVendorTransactions" EntityType="Self.EnfVendorTransaction" />
+          <EntitySet Name="PayByCellPlateTxns" EntityType="Self.PayByCellPlateTxn" />
+          <EntitySet Name="ParkVehicles" EntityType="PemsUsProModel.ParkVehicle" />
+          <AssociationSet Name="FK_PayByCellPlateTxn_VehicleId" Association="PemsUsProModel.FK_PayByCellPlateTxn_VehicleId">
+            <End Role="ParkVehicle" EntitySet="ParkVehicles" />
+            <End Role="PayByCellPlateTxn" EntitySet="PayByCellPlateTxns" />
+          </AssociationSet>
+        </EntityContainer>
+        <EntityType Name="ParkVehicle">
+          <Key>
+            <PropertyRef Name="VehicleID" />
+          </Key>
+          <Property Name="VehicleID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="LPNumber" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="LPLocation" Type="String" Nullable="false" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="VMake" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="VModel" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="VColour" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="PayByCellPlateTxns" Relationship="PemsUsProModel.FK_PayByCellPlateTxn_VehicleId" FromRole="ParkVehicle" ToRole="PayByCellPlateTxn" />
+        </EntityType>
+        <Association Name="FK_PayByCellPlateTxn_VehicleId">
+          <End Type="PemsUsProModel.ParkVehicle" Role="ParkVehicle" Multiplicity="0..1" />
+          <End Type="PemsUsProModel.PayByCellPlateTxn" Role="PayByCellPlateTxn" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="ParkVehicle">
+              <PropertyRef Name="VehicleID" />
+            </Principal>
+            <Dependent Role="PayByCellPlateTxn">
+              <PropertyRef Name="VehicleId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="PemsUsProModelStoreContainer" CdmEntityContainer="PemsUsProEntities">
+          <EntitySetMapping Name="ENF_Permits">
+            <EntityTypeMapping TypeName="PemsUsProModel.ENF_Permits">
+              <MappingFragment StoreEntitySet="ENF_Permits">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="ENFCustomerId" ColumnName="ENFCustomerId" />
+                <ScalarProperty Name="ENFCreatedDateTime" ColumnName="ENFCreatedDateTime" />
+                <ScalarProperty Name="ENFPlateNo" ColumnName="ENFPlateNo" />
+                <ScalarProperty Name="ENFState" ColumnName="ENFState" />
+                <ScalarProperty Name="ENFSource" ColumnName="ENFSource" />
+                <ScalarProperty Name="ENFType" ColumnName="ENFType" />
+                <ScalarProperty Name="EnfFileDateTime" ColumnName="EnfFileDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="EnfVendorTransactions">
+            <EntityTypeMapping TypeName="PemsUsProModel.EnfVendorTransaction">
+              <MappingFragment StoreEntitySet="EnfVendorTransaction">
+                <ScalarProperty Name="Id" ColumnName="Id" />
+                <ScalarProperty Name="EnfCustomerId" ColumnName="EnfCustomerId" />
+                <ScalarProperty Name="EnfVendorId" ColumnName="EnfVendorId" />
+                <ScalarProperty Name="GroupId" ColumnName="GroupId" />
+                <ScalarProperty Name="RegionId" ColumnName="RegionId" />
+                <ScalarProperty Name="PayStationId" ColumnName="PayStationId" />
+                <ScalarProperty Name="SettingsId" ColumnName="SettingsId" />
+                <ScalarProperty Name="TicketNumber" ColumnName="TicketNumber" />
+                <ScalarProperty Name="StallId" ColumnName="StallId" />
+                <ScalarProperty Name="PurchasedDate" ColumnName="PurchasedDate" />
+                <ScalarProperty Name="ExpiryDate" ColumnName="ExpiryDate" />
+                <ScalarProperty Name="PaymentType" ColumnName="PaymentType" />
+                <ScalarProperty Name="TransactionType" ColumnName="TransactionType" />
+                <ScalarProperty Name="CardType" ColumnName="CardType" />
+                <ScalarProperty Name="CardNumber" ColumnName="CardNumber" />
+                <ScalarProperty Name="CardPocessingRetries" ColumnName="CardPocessingRetries" />
+                <ScalarProperty Name="CardProcessingTxnId" ColumnName="CardProcessingTxnId" />
+                <ScalarProperty Name="PaidCitationNumber" ColumnName="PaidCitationNumber" />
+                <ScalarProperty Name="ExcessAmountPaid" ColumnName="ExcessAmountPaid" />
+                <ScalarProperty Name="RefundTicketAmount" ColumnName="RefundTicketAmount" />
+                <ScalarProperty Name="RefundChangeIssued" ColumnName="RefundChangeIssued" />
+                <ScalarProperty Name="ChargedAmount" ColumnName="ChargedAmount" />
+                <ScalarProperty Name="TotalCashAmount" ColumnName="TotalCashAmount" />
+                <ScalarProperty Name="TotalCardAmount" ColumnName="TotalCardAmount" />
+                <ScalarProperty Name="RateId" ColumnName="RateId" />
+                <ScalarProperty Name="RateName" ColumnName="RateName" />
+                <ScalarProperty Name="PlateNumber" ColumnName="PlateNumber" />
+                <ScalarProperty Name="PayByCellVendorId" ColumnName="PayByCellVendorId" />
+                <ScalarProperty Name="CreationDate" ColumnName="CreationDate" />
+                <ScalarProperty Name="UpdateDate" ColumnName="UpdateDate" />
+                <ScalarProperty Name="SerialNumber" ColumnName="SerialNumber" />
+                <ScalarProperty Name="paystationType" ColumnName="paystationType" />
+                <ScalarProperty Name="LocationId" ColumnName="LocationId" />
+                <ScalarProperty Name="cardProcessingAuthorizationNumber" ColumnName="cardProcessingAuthorizationNumber" />
+                <ScalarProperty Name="cardProcessingDate" ColumnName="cardProcessingDate" />
+                <ScalarProperty Name="cardProcessingStatus" ColumnName="cardProcessingStatus" />
+                <ScalarProperty Name="cardProcessingReferenceNumber" ColumnName="cardProcessingReferenceNumber" />
+                <ScalarProperty Name="cardProcessingMerchantAccount" ColumnName="cardProcessingMerchantAccount" />
+                <ScalarProperty Name="couponNumber" ColumnName="couponNumber" />
+                <ScalarProperty Name="couponDiscountPercent" ColumnName="couponDiscountPercent" />
+                <ScalarProperty Name="couponDiscountDollar" ColumnName="couponDiscountDollar" />
+                <ScalarProperty Name="RateValue" ColumnName="RateValue" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PayByCellPlateTxns">
+            <EntityTypeMapping TypeName="PemsUsProModel.PayByCellPlateTxn">
+              <MappingFragment StoreEntitySet="PayByCellPlateTxn">
+                <ScalarProperty Name="PayByCellPlateTxnId" ColumnName="PayByCellPlateTxnId" />
+                <ScalarProperty Name="CustomerId" ColumnName="CustomerId" />
+                <ScalarProperty Name="TxnSeqNum" ColumnName="TxnSeqNum" />
+                <ScalarProperty Name="ReceiptId" ColumnName="ReceiptId" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="StartDateTime" ColumnName="StartDateTime" />
+                <ScalarProperty Name="ExpiryDateTime" ColumnName="ExpiryDateTime" />
+                <ScalarProperty Name="TransDateTime" ColumnName="TransDateTime" />
+                <ScalarProperty Name="SpaceNum" ColumnName="SpaceNum" />
+                <ScalarProperty Name="Amount" ColumnName="Amount" />
+                <ScalarProperty Name="TimePaid" ColumnName="TimePaid" />
+                <ScalarProperty Name="MeterId" ColumnName="MeterId" />
+                <ScalarProperty Name="VendorId" ColumnName="VendorId" />
+                <ScalarProperty Name="ZoneId" ColumnName="ZoneId" />
+                <ScalarProperty Name="TxnType" ColumnName="TxnType" />
+                <ScalarProperty Name="VehicleId" ColumnName="VehicleId" />
+                <ScalarProperty Name="CreateDateTime" ColumnName="CreateDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ParkVehicles">
+            <EntityTypeMapping TypeName="PemsUsProModel.ParkVehicle">
+              <MappingFragment StoreEntitySet="ParkVehicle">
+                <ScalarProperty Name="VColour" ColumnName="VColour" />
+                <ScalarProperty Name="VModel" ColumnName="VModel" />
+                <ScalarProperty Name="VMake" ColumnName="VMake" />
+                <ScalarProperty Name="LPLocation" ColumnName="LPLocation" />
+                <ScalarProperty Name="LPNumber" ColumnName="LPNumber" />
+                <ScalarProperty Name="VehicleID" ColumnName="VehicleID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

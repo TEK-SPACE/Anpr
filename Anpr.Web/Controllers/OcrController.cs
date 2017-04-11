@@ -58,8 +58,15 @@ namespace ANPR.Controllers
 
             if (!string.IsNullOrWhiteSpace(content))
             {
-                content = content.Replace("-nan", "0");
-                imageResponse = JsonConvert.DeserializeObject<ImageResponse>(content);
+                try
+                {
+                    content = content.Replace("-nan", "0");
+                    imageResponse = JsonConvert.DeserializeObject<ImageResponse>(content);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
 
             if (imageResponse?.Results == null || !imageResponse.Results.Any())
@@ -72,6 +79,24 @@ namespace ANPR.Controllers
                 TypeNameHandling = TypeNameHandling.Objects,
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
+
+            foreach (var result in imageResponse.Results)
+            {
+                foreach (var candidate in result.Candidates)
+                {
+                    candidate.Violation = Violation(candidate.Plate);
+                    candidate.Expired = Expired(candidate.Plate);
+                    candidate.ValidPayments = ValidPayments(candidate.Plate);
+                    candidate.NoMatches = NoMatches(candidate.Plate);
+                    candidate.AssignedClass = candidate.Violation
+                        ? "violation"
+                        : candidate.Expired
+                            ? "expired"
+                                : candidate.ValidPayments
+                                    ? "validPayment" : candidate.NoMatches ? "nomatch" : "empty";
+                }
+            }
+
             return Json(imageResponse, jsonSerializerSettings);
         }
 
@@ -89,6 +114,81 @@ namespace ANPR.Controllers
                 var response = await httpClient.PostAsync(url, requestContent);
                 return await response.Content.ReadAsStringAsync();
             }
+        }
+
+        private bool Violation(string plateNumber)
+        {
+            bool hasViolations;
+            using (PemsUsProEntities context = new PemsUsProEntities())
+            {
+                hasViolations = context.ENF_Permits.Any(x => x.ENFPlateNo.Equals(plateNumber, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return hasViolations;
+        }
+
+        private bool NoMatches(string plateNumber)
+        {
+            bool noMatch;
+            using (PemsUsProEntities context = new PemsUsProEntities())
+            {
+                noMatch = !context.EnfVendorTransactions.Any(x => x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase));
+                if (noMatch)
+                {
+                    noMatch =
+                        !context.ENF_Permits.Any(
+                            x => x.ENFPlateNo.Equals(plateNumber, StringComparison.OrdinalIgnoreCase));
+                }
+                if (noMatch)
+                {
+                    noMatch = !(from pcp in context.PayByCellPlateTxns
+                        join pv in context.ParkVehicles on pcp.VehicleId equals pv.VehicleID
+                        where pv.LPNumber == plateNumber
+                        select pv).Any();
+                }
+            }
+            return noMatch;
+        }
+
+        private bool ValidPayments(string plateNumber)
+        {
+            bool hasValidPayments;
+            using (PemsUsProEntities context = new PemsUsProEntities())
+            {
+                hasValidPayments = context.EnfVendorTransactions.Any(x => x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase));
+                if (hasValidPayments) return true;
+                var dayBefore = DateTime.Now.AddDays(-1);
+                hasValidPayments = (from pcp in context.PayByCellPlateTxns
+                    join pv in context.ParkVehicles on pcp.VehicleId equals pv.VehicleID
+                    join vt in context.EnfVendorTransactions on pv.LPNumber equals vt.PlateNumber
+                    where
+                    pv.LPNumber == plateNumber &&
+                    (pcp.TransDateTime > dayBefore && pcp.TransDateTime < DateTime.Now)
+                    && vt.ExpiryDate > DateTime.Now
+                    select pv).Any();
+            }
+            return hasValidPayments;
+        }
+
+        private bool Expired(string plateNumber)
+        {
+            bool isExpired;
+            using (PemsUsProEntities context = new PemsUsProEntities())
+            {
+                isExpired = !context.EnfVendorTransactions.Any(x => 
+                x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase)
+                && x.ExpiryDate < DateTime.Now);
+                if (isExpired)
+                {
+                    isExpired =
+                    (from pv in context.ParkVehicles
+                        join pcp in context.PayByCellPlateTxns on pv.VehicleID equals pcp.VehicleId
+                        where pv.LPNumber == plateNumber && pcp.ExpiryDateTime < DateTime.Now
+                        select pv).Any();
+                }
+            }
+
+            return isExpired;
         }
         // PUT api/<controller>/5
         public void Put(int id, [FromBody]string value)

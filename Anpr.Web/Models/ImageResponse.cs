@@ -53,7 +53,16 @@ namespace ANPR.Models
 
         [JsonProperty("matches_template")]
         public int MatchesTemplate { get; set; }
+
+        public bool Violation { get; set; }
+        public bool Expired { get; set; }
+        public bool ValidPayments { get; set; }
+        public bool NoMatches { get; set; }
+
+        public string AssignedClass { get; set; }
+
     }
+
     public class Coordinate
     {
         [JsonProperty("x")]
