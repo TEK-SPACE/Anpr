@@ -69,14 +69,7 @@ namespace ANPR.Controllers
                     if (!string.IsNullOrWhiteSpace(content))
                     {
                         content = content.Replace("-nan", "0");
-                        try
-                        {
                         imageResponse = JsonConvert.DeserializeObject<ImageResponse>(content);
-                        }
-                        catch (Exception e)
-                        {
-                            throw new Exception(baseUri + content);
-                        }
                     }
                 }
             }
