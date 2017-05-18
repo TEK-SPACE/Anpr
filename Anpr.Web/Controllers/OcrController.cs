@@ -1,38 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Results;
-using System.Web.Mvc;
 using ANPR.Models;
 using ANPR.Utitlities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Json = System.Web.Helpers.Json;
 
 namespace ANPR.Controllers
 {
-    public class OcrController : ApiController
+    public class OcrController : BaseApiController
     {
-        private readonly string _baseUri = "http://132.148.85.241:8000/";
-        // GET api/<controller>
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/<controller>/5
-        public string Get(int id)
-        {
-            return "value";
-        }
-
         // POST api/<controller>
-        [System.Web.Http.HttpPost]
+        [HttpPost]
         public async Task<JsonResult<ImageResponse>> Post()
         {
             var httpContent = Request.Content;
@@ -52,7 +35,7 @@ namespace ANPR.Controllers
                     MediaTypeHeaderValue.Parse("image/jpeg");
                 requestContent.Add(imageContent, "image", fileName);
                 requestContent.Headers.Add("Image-type", "jpeg");
-                var response = await httpClient.PostAsync(_baseUri, requestContent);
+                var response = await httpClient.PostAsync(BaseUri, requestContent);
                 content = await response.Content.ReadAsStringAsync();
             }
 

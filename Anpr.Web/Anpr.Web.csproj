@@ -194,8 +194,10 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\BaseApiController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\OcrController.cs" />
+    <Compile Include="Controllers\PlateController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="EnfVendorTransaction.cs">
       <DependentUpon>PemsModel.tt</DependentUpon>
@@ -285,6 +287,7 @@
     <Content Include="PemsModel.edmx.diagram">
       <DependentUpon>PemsModel.edmx</DependentUpon>
     </Content>
+    <Content Include="Sample\candidate.json" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />
