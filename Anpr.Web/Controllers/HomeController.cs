@@ -46,7 +46,7 @@ namespace ANPR.Controllers
                         + file.FileName);
             string fileName = file.FileName;
 
-            ImageResponse imageResponse = null;
+            ImageResponse imageResponse = new ImageResponse();
 
             using (var formDataContent = new MultipartFormDataContent())
             {
