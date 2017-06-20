@@ -3,6 +3,7 @@ using ANPR.Utitlities;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
@@ -35,14 +36,14 @@ namespace ANPR.Controllers
         public async Task<ActionResult> Upload(FormCollection formCollection)
         {
             Debug.Assert(Request.Url != null, "Request.Url != null");
-            var baseUri = $"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}/ANPR/api/Ocr";
+            var baseUri = $"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}/{ConfigurationManager.AppSettings["VirtualPath"]}api/Ocr";
 
             HttpPostedFileBase file = Request?.Files[0];
 
             if (file == null || (file.ContentLength <= 0) || string.IsNullOrEmpty(file.FileName))
                 return new EmptyResult();
 
-            file.SaveAs(HttpContext.Server.MapPath("~/Images/")
+            file.SaveAs(HttpContext.Server.MapPath("~/images/")
                         + file.FileName);
             string fileName = file.FileName;
 
@@ -73,7 +74,7 @@ namespace ANPR.Controllers
                     }
                 }
             }
-            ViewBag.FilePath = $"images/{fileName}";
+            ViewBag.FilePath = $"{ConfigurationManager.AppSettings["VirtualPath"]}images/{fileName}";
             return View("Result", imageResponse);
         }
 
