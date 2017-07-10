@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -9,7 +10,7 @@ namespace ANPR.Controllers
 {
     public class BaseApiController : ApiController
     {
-        protected const string BaseUri = "http://132.148.85.241:8000/";
+        protected readonly string BaseUri = ConfigurationManager.AppSettings["LicensePlateRecognationServer"];
 
         // GET api/<controller>
         public IEnumerable<string> Get()

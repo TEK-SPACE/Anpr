@@ -1,8 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Results;
 using ANPR.Models;
@@ -14,30 +21,63 @@ namespace ANPR.Controllers
 {
     public class OcrController : BaseApiController
     {
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
         // POST api/<controller>
         [HttpPost]
-        public async Task<JsonResult<ImageResponse>> Post()
+        public async Task<JsonResult<ImageResponse>> Post(int id)
         {
-            var httpContent = Request.Content;
-            //get file name from content disposition
-            var fileName = httpContent.Headers.ContentDisposition?.FileName ?? "image.jpg";
-            //Get file stream from the request content
-            var fileStream = await httpContent.ReadAsStreamAsync();
-
+            string content = null;
             ImageResponse imageResponse = null;
+            var httpRequest = HttpContext.Current.Request;
+            Dictionary<string, object> dict = new Dictionary<string, object>();
 
-            string content;
-            using (var httpClient = new HttpClient())
+            var fileBytesRequest = Request.Content.ReadAsByteArrayAsync().Result;
+
+            //foreach (string file in httpRequest.Files)
+            //{
+            //var postedFile = httpRequest.Files[file];
+            //if (postedFile != null && postedFile.ContentLength > 0)
+            //{
+            //int MaxContentLength = 1024 * 1024 * 1; //Size = 1 MB  
+            //IList<string> allowedFileExtensions = new List<string> {".jpg", ".gif", ".png"};
+            //var ext = postedFile.FileName.Substring(postedFile.FileName.LastIndexOf('.'));
+            //var extension = ext.ToLower();
+            //var filePath =
+            //    HttpContext.Current.Server.MapPath("~/images/" + postedFile.FileName + extension);
+            //postedFile.SaveAs(filePath);
+
+            //byte[] fileBytes = File.ReadAllBytes(filePath);
+            ByteArrayContent byteArrayContent = new ByteArrayContent(fileBytesRequest);
+
+            HttpClient httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders
+                .Accept
+                .Add(new MediaTypeWithQualityHeaderValue("image/jpeg")); //ACCEPT header
+            httpClient.DefaultRequestHeaders.Add("image-type", "jpeg");
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type",
+                "image/jpeg; charset=utf-8");
+            try
             {
-                var requestContent = new MultipartFormDataContent();
-                var imageContent = new StreamContent(fileStream);
-                imageContent.Headers.ContentType =
-                    MediaTypeHeaderValue.Parse("image/jpeg");
-                requestContent.Add(imageContent, "image", fileName);
-                requestContent.Headers.Add("Image-type", "jpeg");
-                var response = await httpClient.PostAsync(BaseUri, requestContent);
-                content = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(BaseUri, byteArrayContent);
+                content = httpResponseMessage.Content.ReadAsStringAsync().Result;
             }
+            catch (Exception e)
+            {
+                throw new Exception(BaseUri + e.ToString());
+            }
+
+            //}
+            //}
 
             if (!string.IsNullOrWhiteSpace(content))
             {
@@ -48,14 +88,14 @@ namespace ANPR.Controllers
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    throw new Exception(BaseUri + content);
                 }
             }
 
-            if (imageResponse?.Results == null || !imageResponse.Results.Any())
-            {
-                imageResponse = JsonConvert.DeserializeObject<ImageResponse>(@"..\Sample\response.json".Load());
-            }
+            //if (imageResponse?.Results == null || !imageResponse.Results.Any())
+            //{
+            //    imageResponse = JsonConvert.DeserializeObject<ImageResponse>(@"..\Sample\response.json".Load());
+            //}
             var jsonSerializerSettings = new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
@@ -67,16 +107,19 @@ namespace ANPR.Controllers
             {
                 foreach (var candidate in result.Candidates)
                 {
-                    candidate.Violation = Violation(candidate.Plate);
-                    candidate.Expired = Expired(candidate.Plate);
-                    candidate.ValidPayments = ValidPayments(candidate.Plate);
-                    candidate.NoMatches = NoMatches(candidate.Plate);
+                    candidate.Violation = Violation(candidate.Plate, id);
+                    candidate.Expired = Expired(candidate.Plate, id);
+                    candidate.ValidPayments = ValidPayments(candidate.Plate, id);
+                    candidate.NoMatches = NoMatches(candidate.Plate, id);
                     candidate.AssignedClass = candidate.Violation
                         ? "violation"
                         : candidate.Expired
                             ? "expired"
-                                : candidate.ValidPayments
-                                    ? "validPayment" : candidate.NoMatches ? "nomatch" : "empty";
+                            : candidate.ValidPayments
+                                ? "validPayment"
+                                : candidate.NoMatches
+                                    ? "nomatch"
+                                    : "empty";
                 }
             }
 
@@ -99,18 +142,19 @@ namespace ANPR.Controllers
             }
         }
 
-        private bool Violation(string plateNumber)
+        private bool Violation(string plateNumber, int customerId)
         {
             bool hasViolations;
             using (PemsUsProEntities context = new PemsUsProEntities())
             {
-                hasViolations = context.ENF_Permits.Any(x => x.ENFPlateNo.Equals(plateNumber, StringComparison.OrdinalIgnoreCase));
+                hasViolations = context.ENF_Permits.Any(x => 
+                x.ENFPlateNo.Equals(plateNumber, StringComparison.OrdinalIgnoreCase) && x.ENFCustomerId.Equals(customerId));
             }
 
             return hasViolations;
         }
 
-        private bool NoMatches(string plateNumber)
+        private bool NoMatches(string plateNumber, int customerId)
         {
             bool noMatch;
             using (PemsUsProEntities context = new PemsUsProEntities())
@@ -120,7 +164,8 @@ namespace ANPR.Controllers
                 {
                     noMatch =
                         !context.ENF_Permits.Any(
-                            x => x.ENFPlateNo.Equals(plateNumber, StringComparison.OrdinalIgnoreCase));
+                            x => x.ENFPlateNo.Equals(plateNumber, StringComparison.OrdinalIgnoreCase)
+                                 && x.ENFCustomerId.Equals(customerId));
                 }
                 if (noMatch)
                 {
@@ -133,12 +178,13 @@ namespace ANPR.Controllers
             return noMatch;
         }
 
-        private bool ValidPayments(string plateNumber)
+        private bool ValidPayments(string plateNumber, int customerId)
         {
             bool hasValidPayments;
             using (PemsUsProEntities context = new PemsUsProEntities())
             {
-                hasValidPayments = context.EnfVendorTransactions.Any(x => x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase));
+                hasValidPayments = context.EnfVendorTransactions.Any(x => x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase)
+                                                                          && x.EnfCustomerId.HasValue && x.EnfCustomerId.Value.Equals(customerId));
                 if (hasValidPayments) return true;
                 var dayBefore = DateTime.Now.AddDays(-1);
                 hasValidPayments = (from pcp in context.PayByCellPlateTxns
@@ -153,13 +199,14 @@ namespace ANPR.Controllers
             return hasValidPayments;
         }
 
-        private bool Expired(string plateNumber)
+        private bool Expired(string plateNumber, int customerId)
         {
             bool isExpired;
             using (PemsUsProEntities context = new PemsUsProEntities())
             {
                 isExpired = !context.EnfVendorTransactions.Any(x => 
                 x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase)
+                && x.EnfCustomerId.HasValue && x.EnfCustomerId.Value.Equals(customerId)
                 && x.ExpiryDate < DateTime.Now);
                 if (isExpired)
                 {

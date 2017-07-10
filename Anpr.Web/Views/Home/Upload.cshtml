@@ -8,6 +8,7 @@
 @using (Html.BeginForm("Upload","Home", FormMethod.Post, new { enctype = "multipart/form-data"}))
 {
     <input type="file" name="imageUploaded" id="imageUploaded" />
+    @Html.TextBox("CustomerId")
     <input type="submit" name="Submit" value="Submit" />
 
 }

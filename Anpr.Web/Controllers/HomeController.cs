@@ -1,17 +1,17 @@
-﻿using ANPR.Models;
+﻿using System;
+using ANPR.Models;
 using ANPR.Utitlities;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
-using Newtonsoft.Json.Linq;
 
 namespace ANPR.Controllers
 {
@@ -31,20 +31,32 @@ namespace ANPR.Controllers
 
             return View();
         }
-
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
         [HttpPost]
         public async Task<ActionResult> Upload(FormCollection formCollection)
         {
             Debug.Assert(Request.Url != null, "Request.Url != null");
-            var baseUri = $"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}/{ConfigurationManager.AppSettings["VirtualPath"]}api/Ocr";
+            var baseUri = $"{Request.Url.Scheme}://{Request.Url.Host}:{Request.Url.Port}/{ConfigurationManager.AppSettings["VirtualPath"]}api/Ocr?id={formCollection["CustomerId"]}";
 
             HttpPostedFileBase file = Request?.Files[0];
 
             if (file == null || (file.ContentLength <= 0) || string.IsNullOrEmpty(file.FileName))
                 return new EmptyResult();
+            var directoryPath = Path.Combine(AssemblyDirectory.Replace("bin", ""), "images");
+            if (!Directory.Exists(directoryPath))
+                Directory.CreateDirectory(directoryPath);
+            var filePath = Path.Combine(directoryPath, file.FileName);
+            file.SaveAs(filePath);
 
-            file.SaveAs(HttpContext.Server.MapPath("~/images/")
-                        + file.FileName);
             string fileName = file.FileName;
 
             ImageResponse imageResponse = new ImageResponse();
@@ -63,10 +75,22 @@ namespace ANPR.Controllers
                     FileName = file.FileName
                 };
                 formDataContent.Add(streamContent);
+
                 using (var httpClient = new HttpClient())
                 {
-                    var response = await httpClient.PostAsync(baseUri, formDataContent);
-                    var content = await response.Content.ReadAsStringAsync();
+                    HttpResponseMessage response;
+                    string content;
+                    try
+                    {
+                        response = await httpClient.PostAsync(baseUri, formDataContent);
+                        content = await response.Content.ReadAsStringAsync();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                    
                     if (!string.IsNullOrWhiteSpace(content))
                     {
                         content = content.Replace("-nan", "0");
@@ -74,14 +98,14 @@ namespace ANPR.Controllers
                     }
                 }
             }
-            ViewBag.FilePath = $"{ConfigurationManager.AppSettings["VirtualPath"]}images/{fileName}";
+            ViewBag.FilePath = fileName;
             return View("Result", imageResponse);
         }
 
         [HttpPost]
         public async Task<ActionResult> Other(FormCollection formCollection)
         {
-            var baseUri = "http://132.148.85.241:8000/";
+            var licensePlateRecognationServerUri = ConfigurationManager.AppSettings["LicensePlateRecognationServer"];
             HttpPostedFileBase file = Request?.Files[0];
 
             if (file == null || (file.ContentLength <= 0) || string.IsNullOrEmpty(file.FileName))
@@ -104,7 +128,7 @@ namespace ANPR.Controllers
                 {
                     httpClient.DefaultRequestHeaders.Add("Image-type", "jpeg");
 
-                    var response = await httpClient.PostAsync(baseUri, formDataContent);
+                    var response = await httpClient.PostAsync(licensePlateRecognationServerUri, formDataContent);
                     var content = await response.Content.ReadAsStringAsync();
                     if (!string.IsNullOrWhiteSpace(content))
                     {
