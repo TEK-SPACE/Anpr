@@ -13,10 +13,10 @@ namespace ANPR
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class PemsUsProEntities : DbContext
+    public partial class PEMSRBAC_US_PROEntities : DbContext
     {
-        public PemsUsProEntities()
-            : base("name=PemsUsProEntities")
+        public PEMSRBAC_US_PROEntities()
+            : base("name=PEMSRBAC_US_PROEntities")
         {
         }
     
@@ -25,10 +25,6 @@ namespace ANPR
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<ENF_Permits> ENF_Permits { get; set; }
-        public virtual DbSet<EnfVendorTransaction> EnfVendorTransactions { get; set; }
-        public virtual DbSet<PayByCellPlateTxn> PayByCellPlateTxns { get; set; }
-        public virtual DbSet<ParkVehicle> ParkVehicles { get; set; }
-        public virtual DbSet<TimeZone> TimeZones { get; set; }
+        public virtual DbSet<CustomerProfile> CustomerProfiles { get; set; }
     }
 }

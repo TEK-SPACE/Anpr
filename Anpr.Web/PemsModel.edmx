@@ -98,6 +98,17 @@
           <Property Name="VehicleId" Type="int" />
           <Property Name="CreateDateTime" Type="datetime" Nullable="false" />
         </EntityType>
+        <EntityType Name="TimeZones">
+          <Key>
+            <PropertyRef Name="TimeZoneID" />
+          </Key>
+          <Property Name="TimeZoneID" Type="int" Nullable="false" />
+          <Property Name="LocalTimeUTCDifference" Type="int" Nullable="false" />
+          <Property Name="DaylightSavingAdjustment" Type="int" Nullable="false" />
+          <Property Name="UTCSummerTimeStart" Type="smalldatetime" Nullable="false" />
+          <Property Name="UTCSummerTimeEnd" Type="smalldatetime" Nullable="false" />
+          <Property Name="TimeZoneName" Type="varchar" MaxLength="50" />
+        </EntityType>
         <Association Name="FK_PayByCellPlateTxn_VehicleId">
           <End Role="ParkVehicle" Type="Self.ParkVehicle" Multiplicity="0..1" />
           <End Role="PayByCellPlateTxn" Type="Self.PayByCellPlateTxn" Multiplicity="*" />
@@ -115,6 +126,7 @@
           <EntitySet Name="EnfVendorTransaction" EntityType="Self.EnfVendorTransaction" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ParkVehicle" EntityType="Self.ParkVehicle" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="PayByCellPlateTxn" EntityType="Self.PayByCellPlateTxn" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="TimeZones" EntityType="Self.TimeZones" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_PayByCellPlateTxn_VehicleId" Association="Self.FK_PayByCellPlateTxn_VehicleId">
             <End Role="ParkVehicle" EntitySet="ParkVehicle" />
             <End Role="PayByCellPlateTxn" EntitySet="PayByCellPlateTxn" />
@@ -216,6 +228,7 @@
             <End Role="ParkVehicle" EntitySet="ParkVehicles" />
             <End Role="PayByCellPlateTxn" EntitySet="PayByCellPlateTxns" />
           </AssociationSet>
+          <EntitySet Name="TimeZones" EntityType="PemsUsProModel.TimeZone" />
         </EntityContainer>
         <EntityType Name="ParkVehicle">
           <Key>
@@ -241,6 +254,17 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="TimeZone">
+          <Key>
+            <PropertyRef Name="TimeZoneID" />
+          </Key>
+          <Property Name="TimeZoneID" Type="Int32" Nullable="false" />
+          <Property Name="LocalTimeUTCDifference" Type="Int32" Nullable="false" />
+          <Property Name="DaylightSavingAdjustment" Type="Int32" Nullable="false" />
+          <Property Name="UTCSummerTimeStart" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="UTCSummerTimeEnd" Type="DateTime" Nullable="false" Precision="0" />
+          <Property Name="TimeZoneName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -341,6 +365,18 @@
                 <ScalarProperty Name="LPLocation" ColumnName="LPLocation" />
                 <ScalarProperty Name="LPNumber" ColumnName="LPNumber" />
                 <ScalarProperty Name="VehicleID" ColumnName="VehicleID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="TimeZones">
+            <EntityTypeMapping TypeName="PemsUsProModel.TimeZone">
+              <MappingFragment StoreEntitySet="TimeZones">
+                <ScalarProperty Name="TimeZoneName" ColumnName="TimeZoneName" />
+                <ScalarProperty Name="UTCSummerTimeEnd" ColumnName="UTCSummerTimeEnd" />
+                <ScalarProperty Name="UTCSummerTimeStart" ColumnName="UTCSummerTimeStart" />
+                <ScalarProperty Name="DaylightSavingAdjustment" ColumnName="DaylightSavingAdjustment" />
+                <ScalarProperty Name="LocalTimeUTCDifference" ColumnName="LocalTimeUTCDifference" />
+                <ScalarProperty Name="TimeZoneID" ColumnName="TimeZoneID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

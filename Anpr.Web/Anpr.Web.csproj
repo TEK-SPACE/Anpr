@@ -209,6 +209,9 @@
     <Compile Include="Controllers\OcrController.cs" />
     <Compile Include="Controllers\PlateController.cs" />
     <Compile Include="Controllers\ValuesController.cs" />
+    <Compile Include="CustomerProfile.cs">
+      <DependentUpon>RbacModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="EnfVendorTransaction.cs">
       <DependentUpon>PemsModel.tt</DependentUpon>
     </Compile>
@@ -241,6 +244,24 @@
       <DependentUpon>PemsModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RbacModel.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RbacModel.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="RbacModel.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RbacModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="RbacModel.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RbacModel.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="TimeZone.cs">
+      <DependentUpon>PemsModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Utitlities\Json.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -263,6 +284,16 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>PemsModel.edmx</DependentUpon>
       <LastGenOutput>PemsModel.cs</LastGenOutput>
+    </Content>
+    <Content Include="RbacModel.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>RbacModel.edmx</DependentUpon>
+      <LastGenOutput>RbacModel.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="RbacModel.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>RbacModel.edmx</DependentUpon>
+      <LastGenOutput>RbacModel.cs</LastGenOutput>
     </Content>
     <Content Include="Sample\number.jpg" />
     <Content Include="Scripts\bootstrap.js" />
@@ -299,6 +330,13 @@
     </Content>
     <Content Include="Sample\candidate.json" />
     <None Include="Properties\PublishProfiles\LocalFile.pubxml" />
+    <EntityDeploy Include="RbacModel.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>RbacModel.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="RbacModel.edmx.diagram">
+      <DependentUpon>RbacModel.edmx</DependentUpon>
+    </Content>
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
     <Content Include="Scripts\jquery-1.10.2.min.js" />

@@ -102,28 +102,46 @@ namespace ANPR.Controllers
                 TypeNameHandling = TypeNameHandling.Objects,
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
-
+            var violationTypes = new List<string> { "BOOT", "TOW", "STOLEN", "WARNING" };
             foreach (var result in imageResponse.Results)
             {
                 foreach (var candidate in result.Candidates)
                 {
-                    candidate.Violation = Violation(candidate.Plate, id);
+                    //candidate.Plate = candidate.Plate+ stateName
+                    var violoationType = Violation(candidate.Plate, id);
+                    candidate.Violation = !string.IsNullOrWhiteSpace(violoationType) && violationTypes.Any(x => x.Equals(violoationType, StringComparison.OrdinalIgnoreCase));
                     candidate.Expired = Expired(candidate.Plate, id);
-                    candidate.ValidPayments = ValidPayments(candidate.Plate, id);
+                    candidate.ValidPayments = !string.IsNullOrWhiteSpace(violoationType) || ValidPayments(candidate.Plate, id);
                     candidate.NoMatches = NoMatches(candidate.Plate, id);
                     candidate.AssignedClass = candidate.Violation
-                        ? "violation"
-                        : candidate.Expired
-                            ? "expired"
-                            : candidate.ValidPayments
-                                ? "validPayment"
+                        ? $"Violation {violoationType}"
+                        : candidate.ValidPayments
+                            ? !string.IsNullOrWhiteSpace(violoationType) 
+                            && !violationTypes.All(x => x.Equals(violoationType, StringComparison.OrdinalIgnoreCase)) ? $"Paid {violoationType} {GetRateName(customerId:id, plateNumber: candidate.Plate)}" : $"Paid {GetRateName(customerId:id, plateNumber: candidate.Plate)}"
+                            : candidate.Expired
+                                ? "Expired"
                                 : candidate.NoMatches
-                                    ? "nomatch"
-                                    : "empty";
+                                    ? "NoMatch"
+                                    : "Empty";
                 }
             }
 
             return Json(imageResponse, jsonSerializerSettings);
+        }
+
+        private string GetRateName(int customerId, string plateNumber)
+        {
+            if (customerId == 7012)
+            {
+                using (PemsUsProEntities context = new PemsUsProEntities())
+                {
+                    return (from txn in context.PayByCellPlateTxns
+                        join pv in context.ParkVehicles on txn.VehicleId equals pv.VehicleID
+                        where txn.CustomerId == customerId && pv.LPNumber == plateNumber
+                        select txn.TxnSeqNum).FirstOrDefault();
+                }
+            }
+            return string.Empty;
         }
 
         public async Task<string> UploadImage(string url, byte[] imageData)
@@ -142,16 +160,14 @@ namespace ANPR.Controllers
             }
         }
 
-        private bool Violation(string plateNumber, int customerId)
+        private string Violation(string plateNumber, int customerId)
         {
-            bool hasViolations;
             using (PemsUsProEntities context = new PemsUsProEntities())
             {
-                hasViolations = context.ENF_Permits.Any(x => 
-                x.ENFPlateNo.Equals(plateNumber, StringComparison.OrdinalIgnoreCase) && x.ENFCustomerId.Equals(customerId));
+                return context.ENF_Permits.FirstOrDefault(x =>
+                    x.ENFPlateNo.Equals(plateNumber, StringComparison.OrdinalIgnoreCase) &&
+                    x.ENFCustomerId.Equals(customerId))?.ENFType;
             }
-
-            return hasViolations;
         }
 
         private bool NoMatches(string plateNumber, int customerId)
@@ -159,7 +175,9 @@ namespace ANPR.Controllers
             bool noMatch;
             using (PemsUsProEntities context = new PemsUsProEntities())
             {
-                noMatch = !context.EnfVendorTransactions.Any(x => x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase));
+                noMatch = !context.EnfVendorTransactions.Any(
+                    x => x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase)
+                         && x.EnfCustomerId == customerId);
                 if (noMatch)
                 {
                     noMatch =
@@ -178,23 +196,54 @@ namespace ANPR.Controllers
             return noMatch;
         }
 
+        public static DateTime UtcToZoneDateTime(DateTime dateTime, int customerId)
+        {
+            string clientZone;
+            var customerZoneId = 0;
+            using (PEMSRBAC_US_PROEntities context = new PEMSRBAC_US_PROEntities())
+            {
+                customerZoneId = context.CustomerProfiles.FirstOrDefault(x => x.CustomerId == customerId)?.TimeZoneID ??
+                                 0;
+            }
+            if (customerZoneId < 1)
+                return DateTime.UtcNow;
+            using (PemsUsProEntities context = new PemsUsProEntities())
+            {
+                clientZone = context.TimeZones.FirstOrDefault(x => x.TimeZoneID == customerZoneId)?.TimeZoneName;
+            }
+            if (string.IsNullOrWhiteSpace(clientZone))
+                return DateTime.UtcNow;
+            try
+            {
+                TimeZoneInfo clientTimeZone = TimeZoneInfo.FindSystemTimeZoneById(clientZone);
+                DateTime converteDateTime = TimeZoneInfo.ConvertTimeFromUtc(dateTime, clientTimeZone);
+                return converteDateTime;
+            }
+            catch (Exception e)
+            {
+                return DateTime.UtcNow;
+            }
+        }
+
         private bool ValidPayments(string plateNumber, int customerId)
         {
             bool hasValidPayments;
+           
             using (PemsUsProEntities context = new PemsUsProEntities())
             {
                 hasValidPayments = context.EnfVendorTransactions.Any(x => x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase)
                                                                           && x.EnfCustomerId.HasValue && x.EnfCustomerId.Value.Equals(customerId));
                 if (hasValidPayments) return true;
+                var currentDateTime = UtcToZoneDateTime(DateTime.Now, customerId);
                 var dayBefore = DateTime.Now.AddDays(-1);
                 hasValidPayments = (from pcp in context.PayByCellPlateTxns
                     join pv in context.ParkVehicles on pcp.VehicleId equals pv.VehicleID
-                    join vt in context.EnfVendorTransactions on pv.LPNumber equals vt.PlateNumber
+                    //join vt in context.EnfVendorTransactions on pv.LPNumber equals vt.PlateNumber
                     where
-                    pv.LPNumber == plateNumber &&
-                    (pcp.TransDateTime > dayBefore && pcp.TransDateTime < DateTime.Now)
-                    && vt.ExpiryDate > DateTime.Now
-                    select pv).Any();
+                    pv.LPNumber == plateNumber && pcp.CustomerId == customerId &&
+                    (pcp.TransDateTime > dayBefore && pcp.TransDateTime < currentDateTime)
+                    && pcp.ExpiryDateTime > currentDateTime
+                                    select pv).Any();
             }
             return hasValidPayments;
         }
@@ -204,17 +253,18 @@ namespace ANPR.Controllers
             bool isExpired;
             using (PemsUsProEntities context = new PemsUsProEntities())
             {
+                var currentDateTime = UtcToZoneDateTime(DateTime.Now, customerId);
                 isExpired = !context.EnfVendorTransactions.Any(x => 
                 x.PlateNumber.Equals(plateNumber, StringComparison.OrdinalIgnoreCase)
                 && x.EnfCustomerId.HasValue && x.EnfCustomerId.Value.Equals(customerId)
-                && x.ExpiryDate < DateTime.Now);
+                && x.ExpiryDate < currentDateTime);
                 if (isExpired)
                 {
                     isExpired =
                     (from pv in context.ParkVehicles
                         join pcp in context.PayByCellPlateTxns on pv.VehicleID equals pcp.VehicleId
-                        where pv.LPNumber == plateNumber && pcp.ExpiryDateTime < DateTime.Now
-                        select pv).Any();
+                        where pv.LPNumber == plateNumber && pcp.ExpiryDateTime < currentDateTime
+                     select pv).Any();
                 }
             }
 
