@@ -263,7 +263,7 @@ namespace ANPR.Controllers
                     isExpired =
                     (from pv in context.ParkVehicles
                         join pcp in context.PayByCellPlateTxns on pv.VehicleID equals pcp.VehicleId
-                        where pv.LPNumber == plateNumber && pcp.ExpiryDateTime < currentDateTime
+                        where pv.LPNumber == plateNumber && pcp.CustomerId == customerId && pcp.ExpiryDateTime < currentDateTime
                      select pv).Any();
                 }
             }
